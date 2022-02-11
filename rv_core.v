@@ -1,6 +1,56 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
+`define OPCODE_LIST \
+    `X(32'h0000007f, 32'h00000037, `FMT_U,   `INST_LUI,        "lui") \
+    `X(32'h0000007f, 32'h00000017, `FMT_U,   `INST_AUIPC,      "auipc") \
+    `X(32'h0000007f, 32'h0000006f, `FMT_J,   `INST_JAL,        "jal") \
+    `X(32'h0000707f, 32'h00000067, `FMT_I,   `INST_JALR,       "jalr") \
+    `X(32'h0000707f, 32'h00000063, `FMT_B,   `INST_BEQ,        "beq") \
+    `X(32'h0000707f, 32'h00001063, `FMT_B,   `INST_BNE,        "bne") \
+    `X(32'h0000707f, 32'h00004063, `FMT_B,   `INST_BLT,        "blt") \
+    `X(32'h0000707f, 32'h00005063, `FMT_B,   `INST_BGE,        "bge") \
+    `X(32'h0000707f, 32'h00006063, `FMT_B,   `INST_BLTU,       "bltu") \
+    `X(32'h0000707f, 32'h00007063, `FMT_B,   `INST_BGEU,       "bgeu") \
+    `X(32'h0000707f, 32'h00000003, `FMT_I,   `INST_LB,         "lb") \
+    `X(32'h0000707f, 32'h00001003, `FMT_I,   `INST_LH,         "lh") \
+    `X(32'h0000707f, 32'h00002003, `FMT_I,   `INST_LW,         "lw") \
+    `X(32'h0000707f, 32'h00004003, `FMT_I,   `INST_LBU,        "lbu") \
+    `X(32'h0000707f, 32'h00005003, `FMT_I,   `INST_LHU,        "lhu") \
+    `X(32'h0000707f, 32'h00000023, `FMT_S,   `INST_SB,         "sb") \
+    `X(32'h0000707f, 32'h00001023, `FMT_S,   `INST_SH,         "sh") \
+    `X(32'h0000707f, 32'h00002023, `FMT_S,   `INST_SW,         "sw") \
+    `X(32'h0000707f, 32'h00000013, `FMT_I,   `INST_ADDI,       "addi") \
+    `X(32'h0000707f, 32'h00002013, `FMT_I,   `INST_SLTI,       "slti") \
+    `X(32'h0000707f, 32'h00003013, `FMT_I,   `INST_SLTIU,      "sltiu") \
+    `X(32'h0000707f, 32'h00004013, `FMT_I,   `INST_XORI,       "xori") \
+    `X(32'h0000707f, 32'h00006013, `FMT_I,   `INST_ORI,        "ori") \
+    `X(32'h0000707f, 32'h00007013, `FMT_I,   `INST_ANDI,       "andi") \
+    `X(32'hfe00707f, 32'h00001013, `FMT_I,   `INST_SLLI,       "slli") \
+    `X(32'hfe00707f, 32'h00005013, `FMT_I,   `INST_SRLI,       "srli") \
+    `X(32'hfe00707f, 32'h40005013, `FMT_I,   `INST_SRAI,       "srai") \
+    `X(32'hfe00707f, 32'h00000033, `FMT_R,   `INST_ADD,        "add") \
+    `X(32'hfe00707f, 32'h40000033, `FMT_R,   `INST_SUB,        "sub") \
+    `X(32'hfe00707f, 32'h00001033, `FMT_R,   `INST_SLL,        "sll") \
+    `X(32'hfe00707f, 32'h00002033, `FMT_R,   `INST_SLT,        "slt") \
+    `X(32'hfe00707f, 32'h00003033, `FMT_R,   `INST_SLTU,       "sltu") \
+    `X(32'hfe00707f, 32'h00004033, `FMT_R,   `INST_XOR,        "xor") \
+    `X(32'hfe00707f, 32'h00005033, `FMT_R,   `INST_SRL,        "srl") \
+    `X(32'hfe00707f, 32'h40005033, `FMT_R,   `INST_SRA,        "sra") \
+    `X(32'hfe00707f, 32'h00006033, `FMT_R,   `INST_OR,         "or") \
+    `X(32'hfe00707f, 32'h00007033, `FMT_R,   `INST_AND,        "and") \
+    `X(32'hf00fffff, 32'h0000000f, `FMT_I,   `INST_FENCE,      "fence") \
+    `X(32'hffffffff, 32'h0000100f, `FMT_I,   `INST_FENCE_I,    "fence.i") \
+    `X(32'hffffffff, 32'h00000073, `FMT_I,   `INST_ECALL,      "ecall") \
+    `X(32'hffffffff, 32'h00100073, `FMT_I,   `INST_EBREAK,     "ebreak") \
+    `X(32'h0000707f, 32'h00001073, `FMT_I,   `INST_CSRRW,      "csrrw") \
+    `X(32'h0000707f, 32'h00002073, `FMT_I,   `INST_CSRRS,      "csrrs") \
+    `X(32'h0000707f, 32'h00003073, `FMT_I,   `INST_CSRRC,      "csrrc") \
+    `X(32'h0000707f, 32'h00005073, `FMT_I,   `INST_CSRRWI,     "csrrwi") \
+    `X(32'h0000707f, 32'h00006073, `FMT_I,   `INST_CSRRSI,     "csrrsi") \
+    `X(32'h0000707f, 32'h00007073, `FMT_I,   `INST_CSRRCI,     "csrrci")
+
+
 `define SZ_1B 2'b00
 `define SZ_2B 2'b01
 `define SZ_4B 2'b11
@@ -164,6 +214,9 @@ module rv_core(
     wire [31:0] alu_out_q;
     ff_ar #(.W(32)) alu_reg(.clk(clk), .rst(rst), .d(alu_out), .q(alu_out_q));
 
+    wire [31:0] rs2_val_q;
+    ff_ar #(.W(32)) rs2_val_ff(.clk(clk), .rst(rst), .d(rs2_val), .q(rs2_val_q));
+
     reg [31:0] reg_file [0:31];
 
     wire [19:0] addr_n, addr_q;
@@ -179,14 +232,14 @@ module rv_core(
     assign write = write_q && (state_q == `S_UPDATE);
     assign read = read_q || (state_q == `S_FETCH);
     assign size = `SZ_4B;
-    assign data = write_q ? rs2_val : 'bz;
+    assign data = write_q ? rs2_val_q : 'bz; // TODO: could we latch rs2 instead?
     assign addr = addr_q;
 
     always @(*) begin
         if (state_q == `S_FETCH) begin
             case (branch)
                 `BR_NO:     pc_n = pc_q + 4;
-                `BR_YES:    pc_n = alu_out_q;
+                `BR_YES:    pc_n = alu_out;
                 `BR_IF0:    pc_n = alu_out[0] == 1'b0 ? pc_q + imm : pc_q + 4;
                 `BR_IF1:    pc_n = alu_out[0] == 1'b1 ? pc_q + imm : pc_q + 4;
             endcase
@@ -195,7 +248,7 @@ module rv_core(
         end
     end
 
-    assign shamt = {'b0, data[24:20]};
+    assign shamt = {27'b0, data[24:20]};
 
     // decode
     decode decode_inst(
@@ -247,8 +300,8 @@ module rv_core(
     end
 
     // regfile
-    assign rs1_val = reg_file[rs1];
-    assign rs2_val = reg_file[rs2];
+    assign rs1_val = (rs1 == 5'b0) ? 32'b0 : reg_file[rs1];
+    assign rs2_val = (rs2 == 5'b0) ? 32'b0 : reg_file[rs2];
     integer i;
     always @(posedge clk, rst) begin
         if (rst) begin
@@ -289,7 +342,6 @@ module decode(
     reg [5:0] inst;
     reg [3:0] fmt;
 
-    wire [ 6:0] opcode;
     wire [ 2:0] func3;
     wire [ 6:0] func7;
     wire [11:0] imm_11_0;
@@ -305,7 +357,6 @@ module decode(
     wire [ 9:0] imm_10_1;
     wire        imm_20;
 
-    assign opcode      = op[6:0];
     assign rd          = op[11:7];
     assign rs1         = op[19:15];
     assign rs2         = op[24:20];
@@ -325,147 +376,23 @@ module decode(
     assign imm_20      = op[31];
 
     always @(*) begin
+
         inst = `INST_INVALID;
-        case (opcode)
-            'h37: inst = `INST_LUI;
-            'h17: inst = `INST_AUIPC;
-            'h6f: inst = `INST_JAL;
-            'h67:
-                case (func3)
-                    0: inst = `INST_JALR;
-                endcase
-            'h63:
-                case (func3)
-                    0: inst = `INST_BEQ;
-                    1: inst = `INST_BNE;
-                    4: inst = `INST_BLT;
-                    5: inst = `INST_BGE;
-                    6: inst = `INST_BLTU;
-                    7: inst = `INST_BGEU;
-                endcase
-            'h3:
-                case (func3)
-                    0: inst = `INST_LB;
-                    1: inst = `INST_LH;
-                    2: inst = `INST_LW;
-                    4: inst = `INST_LBU;
-                    5: inst = `INST_LHU;
-                endcase
-            'h23:
-                case (func3)
-                    0: inst = `INST_SB;
-                    1: inst = `INST_SH;
-                    2: inst = `INST_SW;
-                endcase
-            'h13:
-                case (func3)
-                    0: inst = `INST_ADDI;
-                    2: inst = `INST_SLTI;
-                    3: inst = `INST_SLTIU;
-                    4: inst = `INST_XORI;
-                    6: inst = `INST_ORI;
-                    7: inst = `INST_ANDI;
-                    1:
-                        case (func7)
-                            0: inst = `INST_SLLI;
-                        endcase
-                    5:
-                        case (func7)
-                            0: inst = `INST_SRLI;
-                            32: inst = `INST_SRAI;
-                        endcase
-                endcase
-            'h33:
-                case (func3)
-                    0:
-                        case (func7)
-                            0: inst = `INST_ADD;
-                            32: inst = `INST_SUB;
-                        endcase
-                    1: inst = `INST_SLL;
-                    2: inst = `INST_SLT;
-                    3: inst = `INST_SLTU;
-                    4: inst = `INST_XOR;
-                    5:
-                        case (func7)
-                            0: inst = `INST_SRL;
-                            32: inst = `INST_SRA;
-                        endcase
-                    6: inst = `INST_OR;
-                    7: inst = `INST_AND;
-                endcase
-            'hf:
-                case (func3)
-                    0: inst = `INST_FENCE;
-                    1: inst = `INST_FENCE_I;
-                endcase
-            'h73:
-                case (func3)
-                    0:
-                        case (imm_11_0)
-                            0: inst = `INST_ECALL;
-                            1: inst = `INST_EBREAK;
-                        endcase
-                    1: inst = `INST_CSRRW;
-                    2: inst = `INST_CSRRS;
-                    3: inst = `INST_CSRRC;
-                    5: inst = `INST_CSRRWI;
-                    6: inst = `INST_CSRRSI;
-                    7: inst = `INST_CSRRCI;
-                endcase
-        endcase
+        if (0) begin
+        `define X(MASK, VALUE, FMT, MNEM, STR) \
+            end else if ((op & MASK) == VALUE) begin inst = MNEM;
+        `OPCODE_LIST
+        end
+        `undef X
     end
 
     always @(*) begin
         fmt = 'bx;
         case (inst)
-            `INST_LUI:      fmt = `FMT_U;
-            `INST_AUIPC:    fmt = `FMT_U;
-            `INST_JAL:      fmt = `FMT_J;
-            `INST_JALR:     fmt = `FMT_I;
-            `INST_BEQ:      fmt = `FMT_B;
-            `INST_BNE:      fmt = `FMT_B;
-            `INST_BLT:      fmt = `FMT_B;
-            `INST_BGE:      fmt = `FMT_B;
-            `INST_BLTU:     fmt = `FMT_B;
-            `INST_BGEU:     fmt = `FMT_B;
-            `INST_LB:       fmt = `FMT_I;
-            `INST_LH:       fmt = `FMT_I;
-            `INST_LW:       fmt = `FMT_I;
-            `INST_LBU:      fmt = `FMT_I;
-            `INST_LHU:      fmt = `FMT_I;
-            `INST_SB:       fmt = `FMT_S;
-            `INST_SH:       fmt = `FMT_S;
-            `INST_SW:       fmt = `FMT_S;
-            `INST_ADDI:     fmt = `FMT_I;
-            `INST_SLTI:     fmt = `FMT_I;
-            `INST_SLTIU:    fmt = `FMT_I;
-            `INST_XORI:     fmt = `FMT_I;
-            `INST_ORI:      fmt = `FMT_I;
-            `INST_ANDI:     fmt = `FMT_I;
-            `INST_SLLI:     fmt = `FMT_I;
-            `INST_SRLI:     fmt = `FMT_I;
-            `INST_SRAI:     fmt = `FMT_I;
-            `INST_ADD:      fmt = `FMT_R;
-            `INST_SUB:      fmt = `FMT_R;
-            `INST_SLL:      fmt = `FMT_R;
-            `INST_SLT:      fmt = `FMT_R;
-            `INST_SLTU:     fmt = `FMT_R;
-            `INST_XOR:      fmt = `FMT_R;
-            `INST_SRL:      fmt = `FMT_R;
-            `INST_SRA:      fmt = `FMT_R;
-            `INST_OR:       fmt = `FMT_R;
-            `INST_AND:      fmt = `FMT_R;
-            `INST_FENCE:    fmt = `FMT_I;
-            `INST_FENCE_I:  fmt = `FMT_I;
-            `INST_ECALL:    fmt = `FMT_I;
-            `INST_EBREAK:   fmt = `FMT_I;
-            `INST_CSRRW:    fmt = `FMT_I;
-            `INST_CSRRS:    fmt = `FMT_I;
-            `INST_CSRRC:    fmt = `FMT_I;
-            `INST_CSRRWI:   fmt = `FMT_I;
-            `INST_CSRRSI:   fmt = `FMT_I;
-            `INST_CSRRCI:   fmt = `FMT_I;
+        `define X(MASK, VALUE, FMT, MNEM, STR) \
+            MNEM:  fmt = FMT;
+            `OPCODE_LIST
+        `undef X
         endcase
     end
 

@@ -1,6 +1,38 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
+`define assert(condition) if (!(condition)) begin $display("ASSERTION FAILED"); $stop; end
+
+`define SZ_1B 2'b00
+`define SZ_2B 2'b01
+`define SZ_4B 2'b11
+
+//module sram(
+//    input wire [17:0] addr,
+//    inout wire [15:0] data,
+//    input wire oe_l, we_l, 
+//    input wire ce_l, ub_l, lb_l
+//);
+//
+//    reg [15:0] data_out;
+//    assign data = (~ce_l && ~oe_l) ? data_out : 'bz;
+//
+//    reg [15:0] mem [0:262143];
+//    
+//    always @(*) begin
+//        if (~ce_l) begin
+//            if (~we_l) begin
+//                if (~ub_l) mem[addr] <= {data[15:8], mem[addr][7:0]};
+//                if (~lb_l) mem[addr] <= {mem[addr][15:8], data[7:0]};
+//            end else if (~oe_l) begin
+//                data_out[15:8] <= ~ub_l ? mem[addr][15:8] : 'bz;
+//                data_out[7:0]  <= ~lb_l ? mem[addr][7:0]  : 'bz;
+//            end
+//        end
+//    end
+//
+//endmodule
+
 module sram(
     input wire [17:0] addr,
     inout wire [31:0] data,
@@ -14,9 +46,9 @@ module sram(
 
     always @(*) begin
         if (~we_l) begin
-            mem[addr[17:2]] <= {data[31:0], mem[addr[17:2]][31:0]};
+            mem[addr[17:2]] <= data[31:0];
         end else if (~oe_l) begin
-            data_out[31:0] <= mem[addr[17:2]][31:0];
+            data_out[31:0] <= mem[addr[17:2]];
         end
     end
 

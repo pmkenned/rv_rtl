@@ -1,6 +1,9 @@
 `timescale 1ns / 1ps
 `default_nettype none
 
+`define INST_EBREAK     6'd41
+`define S_FETCH     1'd0
+
 module testbench;
 
     wire write;
@@ -28,12 +31,32 @@ module testbench;
         #5;
         rst <= 1'b0;
         
-        repeat (100) @(posedge clk);
+        repeat (90) begin
+            @(posedge clk);
+            $display("fetch        %h: %h", addr, data);
+            @(posedge clk);
+            if (!oe_l) begin
+                $display("update read  %h: %h", addr, data);
+            end
+            if (!we_l) begin
+                $display("update write %h: %h", addr, data);
+            end
+        end
+
         $finish;
+    end
+
+    always @(*) begin
+        if ((rvc.state_q == `S_FETCH) && (rvc.decode_inst.inst == `INST_EBREAK)) begin
+            $display("EBREAK %t", $time);
+            $finish;
+        end
     end
 
     assign addr[19:18] = 2'b0;
 
+    //sram sram1(.addr(addr[17:0]), .data(data[31:16]), .oe_l(oe_l), .we_l(we_l), .ce_l(ce1_l), .ub_l(ub1_l), .lb_l(lb1_l));
+    //sram sram2(.addr(addr[17:0]), .data(data[15:0]),  .oe_l(oe_l), .we_l(we_l), .ce_l(ce2_l), .ub_l(ub2_l), .lb_l(lb2_l));
     sram mem(.addr(addr[17:0]), .data(data),  .oe_l(oe_l), .we_l(we_l));
 
     assign oe_l = ~read;
